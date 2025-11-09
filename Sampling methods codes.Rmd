@@ -1,0 +1,110 @@
+---
+title: "ST 531 Proposal"
+author: "Lai On Ping"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Introduction:
+
+
+## Methodology:
+
+The data set I used is a census that each data point is distinguished by the STATE, SEX, and AGE. Therefore, I am drawing a two-stage-cluster sample to estimate the proportion of female receiving SSI payments.
+
+Stage 1, the data set consists 50 states, District of Columbia, and Northern Mariana Islands. From these 52 districts, randomly choose 5 states as our two stages-cluster.
+```{r}
+N <- 52
+n <- 5
+state <- unique(SSI$STATE)
+stage1 <- sample(state,5)
+
+Stage1 <- data.frame(matrix(ncol = 3, nrow = 0))
+#colnames(Stage1) <- c("AGE", "SEX", "RECIPIENTS")
+
+Stage1 <- list()
+
+for(j in 1:5){
+  Stage1[[j]] <- SSI_State_Age_2010[SSI_State_Age_2010$STATE == stage1[j],2:4]
+}
+
+```
+Stage 2 , divide them into 13 age groups and randomly choose 4 of the age groups.
+```{r, eval=FALSE}
+Mi <- rep(13,5)
+mi <- 4
+age <- unique(SSI_State_Age_2010$AGE)
+stage2 <- sample(age, 4)
+```
+
+```{r , eval=FALSE}
+prop <- data.frame(matrix(ncol = 5, nrow = 4), row.names = c(stage2))
+colnames(prop) <- stage1
+
+
+female <- data.frame(matrix(ncol = 5, nrow = 4), row.names = c(stage2))
+colnames(female) <- stage1
+
+totals <- data.frame(matrix(ncol = 5, nrow = 4), row.names = c(stage2))
+colnames(totals) <- stage1
+  
+for(j in 1:5){
+  data <- Stage1[[j]]
+  for(k in 1:4){
+    data2 <- data[data$AGE == stage2[k],]
+    female[k,j] <- data2$RECIPIENTS[data2$SEX == "F  "]
+    totals[k,j] <- sum(data2$RECIPIENTS)
+}}
+female
+totals
+```
+
+```{r}
+#female
+#totals
+```
+
+## Analysis
+
+Here we are estimating the population proportion by the Ratio Estimator. It is because we are assuming we do not know any information about the population and we can only rely on the data that we randomly draw in the previous section. Although the data set I am using have such information, 
+
+Point Estimate :
+```{r, eval=FALSE}
+counts <- vector(length = 5)
+total <- vector(length = 5)
+for(i in 1:5){
+  counts[i] <- sum(female[,i])
+  total[i] <- sum(totals[,i])
+}
+pi <- counts/total
+phat <- sum(Mi*pi)/sum(Mi)
+pi
+phat
+```
+
+
+```{r, eval=FALSE}
+Mi <- rep(13,5)
+ybarR <- sum(Mi*phat)
+ybarR
+```
+
+second stage
+```{r, eval=FALSE}
+si2 <- (mi/(mi-1))*pi*(1-pi)
+Mbar <- 13
+```
+
+
+
+
+
+
+
+Data Set:
+https://catalog.data.gov/dataset/supplemental-security-income-ssi-recipients-in-each-state-by-sex-and-age-december-2010
+
+
+
